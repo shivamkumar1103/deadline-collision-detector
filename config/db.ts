@@ -1,7 +1,10 @@
-import mysql from 'mysql2/promise';
-import dotenv from 'dotenv';
+import mysql from "mysql2/promise";
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 
-dotenv.config();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.join(__dirname, "..", ".env.local") });
 
 let pool: mysql.Pool | null = null;
 
@@ -9,21 +12,21 @@ export const getDB = async () => {
   if (!pool) {
     try {
       const dbConfig = {
-        host: process.env.DB_HOST || 'localhost',
+        host: process.env.DB_HOST || "localhost",
         port: Number(process.env.DB_PORT) || 3306,
-        user: process.env.DB_USER || 'root',
-        password: process.env.DB_PASSWORD || '',
-        database: process.env.DB_NAME || 'deadline_db',
+        user: process.env.DB_USER || "root",
+        password: process.env.DB_PASSWORD || "",
+        database: process.env.DB_NAME || "deadline_db",
         waitForConnections: true,
         connectionLimit: 10,
-        queueLimit: 0
+        queueLimit: 0,
       };
 
       pool = mysql.createPool(dbConfig);
 
       // Test the connection immediately
       await pool.getConnection();
-      console.log('✅ Successfully connected to MySQL database.');
+      console.log("✅ Successfully connected to MySQL database.");
 
       // Auto-create tables for first-time setup
       // 1. Users table
@@ -65,8 +68,12 @@ export const getDB = async () => {
 
       // Self-healing: Ensure subject_id exists if the table was created previously
       try {
-        await pool.execute('ALTER TABLE tasks ADD COLUMN subject_id INT AFTER id');
-        await pool.execute('ALTER TABLE tasks ADD FOREIGN KEY (subject_id) REFERENCES subjects(subject_id) ON DELETE SET NULL');
+        await pool.execute(
+          "ALTER TABLE tasks ADD COLUMN subject_id INT AFTER id",
+        );
+        await pool.execute(
+          "ALTER TABLE tasks ADD FOREIGN KEY (subject_id) REFERENCES subjects(subject_id) ON DELETE SET NULL",
+        );
       } catch (e) {
         // Column already exists, ignore error
       }
@@ -83,11 +90,10 @@ export const getDB = async () => {
           FOREIGN KEY (task2_id) REFERENCES tasks(id) ON DELETE CASCADE
         )
       `);
-
     } catch (error: any) {
-      console.error('❌ DATABASE CONNECTION ERROR:');
+      console.error("❌ DATABASE CONNECTION ERROR:");
       console.error(`Message: ${error.message}`);
-      console.error('--------------------------------------------------');
+      console.error("--------------------------------------------------");
       pool = null;
     }
   }
