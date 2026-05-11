@@ -128,11 +128,19 @@ export function CollisionProvider({ children }: { children: ReactNode }) {
     useState<DeleteConfirmationState>(emptyDeleteState);
   const [formData, setFormData] = useState<TaskFormState>(emptyFormState);
 
+  const apiFetch = async (url: string, options: RequestInit = {}) => {
+    const headers = {
+      ...options.headers,
+      "x-user-email": user?.primaryEmailAddress?.emailAddress || "",
+    };
+    return fetch(url, { ...options, headers });
+  };
+
   const syncUser = async () => {
     if (!user) return;
 
     try {
-      await fetch("/api/users/sync", {
+      await apiFetch("/api/users/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -147,7 +155,7 @@ export function CollisionProvider({ children }: { children: ReactNode }) {
 
   const fetchSubjects = async () => {
     try {
-      const res = await fetch("/api/subjects");
+      const res = await apiFetch("/api/subjects");
       if (res.ok) {
         const data = await res.json();
         setSubjects(data);
@@ -159,13 +167,13 @@ export function CollisionProvider({ children }: { children: ReactNode }) {
 
   const checkClashes = async () => {
     try {
-      const response = await fetch("/api/tasks/detect-clashes");
+      const response = await apiFetch("/api/tasks/detect-clashes");
       if (response.ok) {
         const data = await response.json();
         setClashes(data);
       }
 
-      const sugResponse = await fetch("/api/suggestions");
+      const sugResponse = await apiFetch("/api/suggestions");
       if (sugResponse.ok) {
         const sugData = await sugResponse.json();
         setSuggestions(sugData);
@@ -177,7 +185,7 @@ export function CollisionProvider({ children }: { children: ReactNode }) {
 
   const fetchTasks = async () => {
     try {
-      const response = await fetch("/api/tasks");
+      const response = await apiFetch("/api/tasks");
       const data = await response.json();
 
       if (!response.ok) {
@@ -237,7 +245,7 @@ export function CollisionProvider({ children }: { children: ReactNode }) {
       const url = editingTask ? `/api/tasks/${editingTask.id}` : "/api/tasks";
       const method = editingTask ? "PUT" : "POST";
 
-      const response = await fetch(url, {
+      const response = await apiFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -264,7 +272,7 @@ export function CollisionProvider({ children }: { children: ReactNode }) {
     if (!newSubjectName.trim()) return;
 
     try {
-      const res = await fetch("/api/subjects", {
+      const res = await apiFetch("/api/subjects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newSubjectName }),
@@ -303,11 +311,11 @@ export function CollisionProvider({ children }: { children: ReactNode }) {
 
     try {
       if (type === "subject") {
-        await fetch(`/api/subjects/${id}`, { method: "DELETE" });
+        await apiFetch(`/api/subjects/${id}`, { method: "DELETE" });
         await fetchSubjects();
         await fetchTasks();
       } else if (type === "task") {
-        await fetch(`/api/tasks/${id}`, { method: "DELETE" });
+        await apiFetch(`/api/tasks/${id}`, { method: "DELETE" });
         await fetchTasks();
       }
 
@@ -327,7 +335,7 @@ export function CollisionProvider({ children }: { children: ReactNode }) {
     action: "accept" | "reject",
   ) => {
     try {
-      const res = await fetch(`/api/suggestions/${suggestionId}/${action}`, {
+      const res = await apiFetch(`/api/suggestions/${suggestionId}/${action}`, {
         method: "POST",
       });
 

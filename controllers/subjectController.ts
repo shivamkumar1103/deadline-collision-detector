@@ -3,7 +3,8 @@ import { SubjectModel } from '../models/subjectModel.js';
 
 export const getSubjects = async (req: Request, res: Response) => {
   try {
-    const subjects = await SubjectModel.getAll();
+    const userId = res.locals.userId;
+    const subjects = await SubjectModel.getAll(userId);
     res.json(subjects);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
@@ -13,7 +14,8 @@ export const getSubjects = async (req: Request, res: Response) => {
 export const createSubject = async (req: Request, res: Response) => {
   try {
     const { name } = req.body;
-    const id = await SubjectModel.create(name);
+    const userId = res.locals.userId;
+    const id = await SubjectModel.create(name, userId);
     res.status(201).json({ id, name });
   } catch (error: any) {
     res.status(500).json({ message: error.message });

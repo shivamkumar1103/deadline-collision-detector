@@ -3,7 +3,8 @@ import { TaskModel } from '../models/taskModel.js';
 
 export const getAllTasks = async (req: Request, res: Response) => {
   try {
-    const tasks = await TaskModel.getAll();
+    const userId = res.locals.userId;
+    const tasks = await TaskModel.getAll(userId);
     res.json(tasks);
   } catch (error: any) {
     res.status(503).json({ 
@@ -46,7 +47,8 @@ import { AlertModel } from '../models/alertModel.js';
 
 export const getClashes = async (req: Request, res: Response) => {
   try {
-    const clashes = await TaskModel.detectClashes();
+    const userId = res.locals.userId;
+    const clashes = await TaskModel.detectClashes(userId);
     
     // Log detected clashes to the database table for the DBMS project
     for (const clash of clashes) {

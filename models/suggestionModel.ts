@@ -9,10 +9,15 @@ export interface Suggestion {
 }
 
 export class SuggestionModel {
-  static async getPendingSuggestions(): Promise<Suggestion[]> {
+  static async getPendingSuggestions(userId: number): Promise<Suggestion[]> {
     const db = await getDB();
     if (!db) throw new Error('Database connection failed');
-    const [rows] = await db.execute('SELECT * FROM reschedule_suggestions WHERE status = "Pending"');
+    const [rows] = await db.execute(`
+      SELECT r.* FROM reschedule_suggestions r
+      JOIN tasks t ON r.task_id = t.id
+      JOIN subjects s ON t.subject_id = s.subject_id
+      WHERE r.status = "Pending" AND s.user_id = ?
+    `, [userId]);
     return rows as Suggestion[];
   }
 

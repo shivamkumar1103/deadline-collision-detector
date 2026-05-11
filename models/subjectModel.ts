@@ -7,19 +7,19 @@ export interface Subject {
 }
 
 export class SubjectModel {
-  static async getAll(): Promise<Subject[]> {
+  static async getAll(userId: number): Promise<Subject[]> {
     const db = await getDB();
     if (!db) throw new Error('DB Connection Failed');
-    const [rows] = await db.execute('SELECT * FROM subjects');
+    const [rows] = await db.execute('SELECT * FROM subjects WHERE user_id = ?', [userId]);
     return rows as Subject[];
   }
 
-  static async create(name: string): Promise<number> {
+  static async create(name: string, userId: number): Promise<number> {
     const db = await getDB();
     if (!db) throw new Error('DB Connection Failed');
     const [result]: any = await db.execute(
-      'INSERT INTO subjects (subject_name) VALUES (?)',
-      [name]
+      'INSERT INTO subjects (subject_name, user_id) VALUES (?, ?)',
+      [name, userId]
     );
     return result.insertId;
   }

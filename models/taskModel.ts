@@ -14,10 +14,15 @@ export interface Task {
 }
 
 export class TaskModel {
-  static async getAll(): Promise<Task[]> {
+  static async getAll(userId: number): Promise<Task[]> {
     const db = await getDB();
     if (!db) throw new Error('Database connection failed. Check your config.');
-    const [rows] = await db.execute('SELECT * FROM tasks ORDER BY deadline ASC');
+    const [rows] = await db.execute(`
+      SELECT t.* FROM tasks t
+      JOIN subjects s ON t.subject_id = s.subject_id
+      WHERE s.user_id = ?
+      ORDER BY t.deadline ASC
+    `, [userId]);
     return rows as Task[];
   }
 
@@ -64,7 +69,7 @@ export class TaskModel {
     return true;
   }
 
-  static async detectClashes(): Promise<any[]> {
+  static async detectClashes(userId: number): Promise<any[]> {
     const db = await getDB();
     if (!db) throw new Error('Database connection not available');
     
@@ -74,15 +79,19 @@ export class TaskModel {
         b.id as task2_id, b.title as task2_title, b.deadline as task2_deadline
       FROM tasks a
       JOIN tasks b ON a.id < b.id
+      JOIN subjects sa ON a.subject_id = sa.subject_id
+      JOIN subjects sb ON b.subject_id = sb.subject_id
       WHERE ABS(TIMESTAMPDIFF(SECOND, a.deadline, b.deadline)) < 86400
+        AND sa.user_id = ?
+        AND sb.user_id = ?
       ORDER BY a.deadline ASC
-    `);
+    `, [userId, userId]);
     
     const clashes = rows as any[];
 
     // Import here to avoid circular dependency issues if any
     const { SuggestionModel } = await import('./suggestionModel.js');
-    const allTasks = await this.getAll();
+    const allTasks = await this.getAll(userId);
 
     for (const clash of clashes) {
       const task1 = allTasks.find(t => t.id === clash.task1_id);

@@ -4,7 +4,8 @@ import { TaskModel } from '../models/taskModel.js';
 
 export const getPendingSuggestions = async (req: Request, res: Response) => {
   try {
-    const suggestions = await SuggestionModel.getPendingSuggestions();
+    const userId = res.locals.userId;
+    const suggestions = await SuggestionModel.getPendingSuggestions(userId);
     res.json(suggestions);
   } catch (error: any) {
     res.status(500).json({ message: error.message });

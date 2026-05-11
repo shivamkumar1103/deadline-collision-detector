@@ -11,12 +11,22 @@ let pool: mysql.Pool | null = null;
 export const getDB = async () => {
   if (!pool) {
     try {
-      const dbConfig = {
+      const dbName = process.env.DB_NAME || "deadline_db";
+      const baseConfig = {
         host: process.env.DB_HOST || "localhost",
         port: Number(process.env.DB_PORT) || 3306,
         user: process.env.DB_USER || "root",
         password: process.env.DB_PASSWORD || "",
-        database: process.env.DB_NAME || "deadline_db",
+      };
+
+      // Connect without database to create it if it doesn't exist
+      const tempConnection = await mysql.createConnection(baseConfig);
+      await tempConnection.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
+      await tempConnection.end();
+
+      const dbConfig = {
+        ...baseConfig,
+        database: dbName,
         waitForConnections: true,
         connectionLimit: 10,
         queueLimit: 0,
@@ -145,6 +155,18 @@ export const getDB = async () => {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (task1_id) REFERENCES tasks(id) ON DELETE CASCADE,
           FOREIGN KEY (task2_id) REFERENCES tasks(id) ON DELETE CASCADE
+        )
+      `);
+
+      // 5. Reschedule Suggestions table
+      await pool.execute(`
+        CREATE TABLE IF NOT EXISTS reschedule_suggestions (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          task_id INT NOT NULL,
+          suggested_date DATETIME NOT NULL,
+          status VARCHAR(20) DEFAULT 'Pending',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE
         )
       `);
     } catch (error: any) {
