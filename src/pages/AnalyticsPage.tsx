@@ -110,18 +110,22 @@ export default function AnalyticsPage() {
                     <h2 className="text-2xl font-extrabold uppercase tracking-widest">Workload Priority</h2>
                   </div>
                   
-                  <div className="flex h-64 items-end gap-4 justify-between border-b-4 border-l-4 border-black dark:border-white p-4">
+                  <div className="space-y-6">
                     {Object.entries(priorityCounts).map(([priority, count]) => {
                       const percentage = Math.round((count / maxPriorityCount) * 100) || 0;
-                      
+
                       return (
-                        <div key={priority} className="w-1/3 flex flex-col items-center gap-2 group">
-                          <span className="font-extrabold text-2xl opacity-0 group-hover:opacity-100 transition-opacity">{count}</span>
-                          <div 
-                            className={`w-full border-2 border-black dark:border-white transition-all duration-1000 ${priorityColors[priority]} group-hover:-translate-y-2 group-hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]`}
-                            style={{ height: `${percentage}%`, minHeight: '10%' }}
-                          />
-                          <span className="font-bold text-xs uppercase tracking-widest mt-2">{priority}</span>
+                        <div key={priority} className="space-y-2">
+                          <div className="flex justify-between text-sm font-bold uppercase tracking-widest">
+                            <span>{priority}</span>
+                            <span>{count}</span>
+                          </div>
+                          <div className="h-8 border-2 border-black dark:border-white bg-neutral-100 dark:bg-neutral-900 w-full relative overflow-hidden">
+                            <div
+                              className={`h-full absolute left-0 top-0 border-r-2 border-black dark:border-white transition-all duration-1000 ${priorityColors[priority]}`}
+                              style={{ width: `${percentage}%` }}
+                            />
+                          </div>
                         </div>
                       );
                     })}

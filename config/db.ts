@@ -38,7 +38,6 @@ export const getDB = async () => {
       await pool.getConnection();
       console.log("✅ Successfully connected to MySQL database.");
 
-      // Auto-create tables for first-time setup
       // 1. Users table
       await pool.execute(`
         CREATE TABLE IF NOT EXISTS users (

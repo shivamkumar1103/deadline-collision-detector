@@ -65,28 +65,6 @@ CREATE TABLE collision_alerts (
 );
 
 -- ==========================================
--- SAMPLE INSERT STATEMENTS
--- ==========================================
-
--- Insert sample users
-INSERT INTO users (name, email, password) VALUES 
-('Alice Smith', 'alice@college.edu', 'hashed_pass_123'),
-('Bob Jones', 'bob@college.edu', 'hashed_pass_456');
-
--- Insert sample subjects
-INSERT INTO subjects (user_id, subject_name) VALUES 
-(1, 'Database Management Systems'),
-(1, 'Operating Systems'),
-(2, 'Computer Networks');
-
--- Insert sample tasks
-INSERT INTO tasks (subject_id, title, task_type, deadline, priority, status) VALUES 
-(1, 'DBMS Final Project Phase 1', 'Assignment', '2026-05-10 23:59:00', 3, 'Pending'),
-(2, 'OS Midterm Exam', 'Exam', '2026-05-11 10:00:00', 3, 'Pending'),
-(1, 'SQL Lab Evaluation', 'Lab', '2026-05-15 14:00:00', 2, 'Pending'),
-(3, 'Networks Viva', 'Viva', '2026-05-10 15:00:00', 2, 'Pending');
-
--- ==========================================
 -- DETECT DEADLINE COLLISIONS (SELF JOIN QUERY)
 -- ==========================================
 -- This query finds pairs of tasks (for the same user) 
